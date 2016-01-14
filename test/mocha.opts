@@ -1,0 +1,4 @@
+--require test/helpers/setup
+--ui tdd
+--watch
+--growl

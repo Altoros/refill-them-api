@@ -1,0 +1,32 @@
+{
+  "name": "refill-them-api",
+  "version": "1.0.0",
+  "description": "API to use blueprint-client and give support to RefillThem",
+  "main": "server.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "mobile",
+    "beverage",
+    "dispenser",
+    "mqtt",
+    "blueprint"
+  ],
+  "author": "Altoros",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.3",
+    "xively-blueprint-client-js": "git+ssh://git@github.com:ionia-corporation/blueprint-client.git#v0.0.8"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "chai-as-promised": "^5.2.0",
+    "cordova": "^5.4.1",
+    "ionic": "^1.7.12",
+    "mocha": "^2.3.4",
+    "supertest": "^1.1.0"
+  }
+}
