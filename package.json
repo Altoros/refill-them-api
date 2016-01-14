@@ -19,14 +19,13 @@
   "dependencies": {
     "body-parser": "^1.14.2",
     "express": "^4.13.3",
+    "random-string": "^0.1.2",
     "xively-blueprint-client-js": "git+ssh://git@github.com:ionia-corporation/blueprint-client.git#v0.0.8"
   },
   "devDependencies": {
     "chai": "^3.4.1",
-    "chai-as-promised": "^5.2.0",
-    "cordova": "^5.4.1",
-    "ionic": "^1.7.12",
     "mocha": "^2.3.4",
-    "supertest": "^1.1.0"
+    "supertest": "^1.1.0",
+    "supertest-as-promised": "^2.0.2"
   }
 }
