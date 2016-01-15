@@ -1,3 +1,4 @@
 --require test/helpers/setup
 --watch
 --growl
+--timeout 5000
