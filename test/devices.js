@@ -1,15 +1,31 @@
+var BlueprintClient = require('xively-blueprint-client-js');
+var client = new BlueprintClient({
+  authorization: process.env.BLUEPRINT_AUTHORIZATION,
+});
+var randomString = require('random-string');
+
+before(function (done) {
+  client.ready
+    .then(function() {
+      done();
+    });
+});
+
 describe('Devices', function () {
   var deviceId;
   var associationCode;
 
   it('should save a new device and return an association code', function () {
-    var data = {
-      serial: 'DEVICESERIAL'
-    };
+    var serialNumber = randomString({
+      length: 8,
+      numeric: true,
+      letters: true,
+      special: false
+    }).toUpperCase();
 
     return request
       .post('/devices')
-      .send(data)
+      .send({serial: serialNumber})
       .expect(201)
       .then(function (res) {
         var body = res.body;
@@ -20,17 +36,16 @@ describe('Devices', function () {
 
         expect(device).to.have.property('id');
         expect(device).to.have.property('associationCode');
-        expect(device).to.have.property('serial', data.serial);
-        expect(device).to.have.property('status', 'READY');
+        expect(device).to.have.property('serialNumber', serialNumber);
+        expect(device).to.have.property('provisioningState', 'activated');
+        expect(device).to.have.property('password');
 
         deviceId = device.id;
         associationCode = device.associationCode;
-
-        var credentials = res.body.credentials;
-
-        expect(credentials).to.have.property('secret');
-
       });
+
+    //TODO
+    //Remove device
   });
 
   it('should associate the device', function () {
