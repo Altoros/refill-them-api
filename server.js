@@ -5,19 +5,18 @@ var randomString = require('random-string');
 var BlueprintClient = require('xively-blueprint-client-js');
 
 var client = new BlueprintClient({
-  authorization: process.env.BLUEPRINT_AUTHORIZATION,
+  authorization: process.env.BLUEPRINT_AUTHORIZATION
 });
 
 var server = express();
 
 server.use(bodyParser.json('application/json'));
 
-if(module.parent) {
+if (module.parent) {
   module.exports = server;
-}
-else {
+} else {
   client.ready
-    .then(function() {
+    .then(function () {
       server.listen(3000, function () {
         console.log('RefillThem API listening on http://localhost:3000');
       });
@@ -25,8 +24,7 @@ else {
 }
 
 server.post('/devices', function (req, res) {
-
-  //Generate association code
+  // Generate association code
   var associationCode = randomString({
     length: 8,
     numeric: true,
@@ -34,7 +32,7 @@ server.post('/devices', function (req, res) {
     special: false
   }).toUpperCase();
 
-  //Create device on Blueprint
+  // Create device on Blueprint
   client.apis.devices.create({
     accountId: process.env.BLUEPRINT_ACCOUNT_ID,
     deviceTemplateId: process.env.BLUEPRINT_DEVICE_TEMPLATE_ID,
@@ -45,24 +43,23 @@ server.post('/devices', function (req, res) {
     .then(function (response) {
       var device = response.obj.device;
 
-      //Get MQTT credentials for the device
+      // Get MQTT credentials for the device
       client.apis.accessMqttCredentials.create({
         accountId: process.env.BLUEPRINT_ACCOUNT_ID,
         entityId: device.id,
         entityType: 'device'
       })
         .then(function (response) {
-
           var credential = response.obj.mqttCredential;
 
-          //Get device after get credentials
+          // Get device after get credentials
           client.apis.devices.byId({
             id: device.id
           })
             .then(function (response) {
               device = response.obj.device;
 
-              //Set password to device
+              // Set password to device
               client.apis.devices.update({
                 id: device.id,
                 etag: device.version,
@@ -84,7 +81,7 @@ server.post('/devices', function (req, res) {
             });
         })
         .catch(function (response) {
-          //Delete device
+          // Delete device
           client.apis.devices.delete({
             id: device.id,
             etag: device.version
@@ -102,17 +99,16 @@ server.post('/devices', function (req, res) {
     .catch(function (response) {
       onBlueprintError(response, res);
     });
-
 });
 
-//Utils functions
+// Utils functions
 function onBlueprintError (response, res) {
   console.log('Error!!!');
   var errorMessage = '';
-  if(response.obj.error) {
+  if (response.obj.error) {
     console.log(response.obj.error.details);
     errorMessage = response.obj.error.message;
-  } else if(response.obj.length) {
+  } else if (response.obj.length) {
     console.log(response.obj);
     errorMessage = response.obj[0].message;
   }
