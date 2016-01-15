@@ -1,12 +1,13 @@
+/* global before describe it request expect */
 var BlueprintClient = require('xively-blueprint-client-js');
 var client = new BlueprintClient({
-  authorization: process.env.BLUEPRINT_AUTHORIZATION,
+  authorization: process.env.BLUEPRINT_AUTHORIZATION
 });
 var randomString = require('random-string');
 
 before(function (done) {
   client.ready
-    .then(function() {
+    .then(function () {
       done();
     });
 });
@@ -25,7 +26,9 @@ describe('Devices', function () {
 
     return request
       .post('/devices')
-      .send({serial: serialNumber})
+      .send({
+        serial: serialNumber
+      })
       .expect(201)
       .then(function (res) {
         var body = res.body;
@@ -44,19 +47,19 @@ describe('Devices', function () {
         associationCode = device.associationCode;
       });
 
-    //TODO
-    //Remove device
+  // TODO
+  // Remove device
   });
 
   it('should associate the device', function () {
     var data = {
       device: {
         associationCode: associationCode,
-        name: "Device Name",
+        name: 'Device Name',
         total_shots: 100,
         notify_refill_at: 20,
-        email: "user@domain.com"
-      },
+        email: 'user@domain.com'
+      }
     };
 
     return request
