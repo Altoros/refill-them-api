@@ -2,6 +2,7 @@ var express = require('express');
 var q = require('q');
 var randomString = require('random-string');
 var blueprint_client = require('../modules/blueprint');
+var mqtt_client = require('../modules/mqtt');
 
 var routes = express.Router();
 
@@ -44,6 +45,9 @@ routes
                 // Get device after get credentials
                 updateDevice(device, {password: credential.secret})
                   .then(function (device) {
+                    //Subscribe to device channels
+                    mqtt_client.listenDevice(device);
+
                     res
                       .status(201)
                       .send({device: device});
