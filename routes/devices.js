@@ -1,7 +1,7 @@
 var express = require('express');
 var q = require('q');
 var randomString = require('random-string');
-var client = require('../modules/blueprint');
+var blueprint_client = require('../modules/blueprint');
 
 var routes = express.Router();
 
@@ -16,7 +16,7 @@ routes
     }).toUpperCase();
 
     // Create device on Blueprint
-    client.apis.devices.create({
+    blueprint_client.apis.devices.create({
       accountId: process.env.BLUEPRINT_ACCOUNT_ID,
       deviceTemplateId: process.env.BLUEPRINT_DEVICE_TEMPLATE_ID,
       organizationId: process.env.BLUEPRINT_ORGANIZATION_ID,
@@ -27,7 +27,7 @@ routes
         var device = response.obj.device;
 
         // Get MQTT credentials for the device
-        client.apis.accessMqttCredentials.create({
+        blueprint_client.apis.accessMqttCredentials.create({
           accountId: process.env.BLUEPRINT_ACCOUNT_ID,
           entityId: device.id,
           entityType: 'device'
@@ -35,7 +35,7 @@ routes
           .then(function (response) {
             var credential = response.obj.mqttCredential;
 
-            client.apis.devices.byId({
+            blueprint_client.apis.devices.byId({
               id: device.id
             })
               .then(function (response) {
@@ -55,7 +55,7 @@ routes
               });
           }, function (response) {
             // Delete device
-            client.apis.devices.delete({
+            blueprint_client.apis.devices.delete({
               id: device.id,
               etag: device.version
             })
@@ -74,7 +74,7 @@ routes
   .put('/devices/:id/associate', function (req, res) {
     var deviceId = req.params.id;
 
-    client.apis.devices.byId({
+    blueprint_client.apis.devices.byId({
       id: deviceId
     })
       .then(function (response) {
@@ -102,7 +102,7 @@ routes
   .put('/devices/:id/disassociate', function (req, res) {
     var deviceId = req.params.id;
 
-    client.apis.devices.byId({
+    blueprint_client.apis.devices.byId({
       id: deviceId
     })
       .then(function (response) {
@@ -128,7 +128,7 @@ function updateDevice (device, data) {
   data.etag = device.version;
 
   // Update device
-  client.apis.devices.update(data)
+  blueprint_client.apis.devices.update(data)
     .then(function (response) {
       device = response.obj.device;
       deferred.resolve(device);

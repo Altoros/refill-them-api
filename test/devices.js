@@ -1,8 +1,8 @@
-/* global before describe it request expect client */
+/* global before describe it request expect blueprint_client */
 var randomString = require('random-string');
 
 before(function (done) {
-  client.ready
+  blueprint_client.ready
     .then(function () {
       done();
     });
