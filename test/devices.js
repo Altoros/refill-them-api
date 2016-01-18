@@ -40,6 +40,7 @@ describe('Devices', function () {
         expect(device).to.have.property('serialNumber', serialNumber);
         expect(device).to.have.property('provisioningState', 'activated');
         expect(device).to.have.property('password');
+        expect(device).to.have.property('consumedShots');
 
         //Verifying channels creation
         expect(device.channels).to.have.length(1);
