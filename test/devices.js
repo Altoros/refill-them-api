@@ -4,6 +4,7 @@ var randomString = require('random-string');
 before(function (done) {
   blueprint_client.ready
     .then(function () {
+      mqtt_client.startListener();
       console.log('Blueprint Client ready');
       done();
     });
