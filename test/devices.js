@@ -4,6 +4,7 @@ var randomString = require('random-string');
 before(function (done) {
   blueprint_client.ready
     .then(function () {
+      console.log('Blueprint Client ready');
       done();
     });
 });
@@ -38,6 +39,12 @@ describe('Devices', function () {
         expect(device).to.have.property('serialNumber', serialNumber);
         expect(device).to.have.property('provisioningState', 'activated');
         expect(device).to.have.property('password');
+
+        //Verifying channels creation
+        expect(device.channels).to.have.length(1);
+
+        var status_report = device.channels[0];
+        expect(status_report).to.have.property('channelTemplateName', 'STATUS_REPORT');
 
         deviceId = device.id;
         associationCode = device.associationCode;
