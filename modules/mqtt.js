@@ -28,6 +28,20 @@ mqtt_client.startListener = function () {
     });
 };
 
+mqtt_client.listenDevice = function (device) {
+  var channels = device.channels.map(function (topic) {
+    return topic.channel;
+  });
+
+  mqtt_client.instance.subscribe(channels, {qos: 0}, function (err) {
+    if (err) {
+      console.log('Error subscribing to channels of Device with ID ' +  device.id + ': ', err);
+    } else {
+      console.log('Subscription to device with ID '+ device.id + ': completed');
+    }
+  });
+};
+
 var subscribeDevices = function () {
   blueprint_client.apis.devices.all({
     'accountId': process.env.BLUEPRINT_ACCOUNT_ID
