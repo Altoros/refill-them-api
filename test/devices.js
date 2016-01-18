@@ -56,14 +56,14 @@ describe('Devices', function () {
       device: {
         associationCode: associationCode,
         name: 'Device Name',
-        total_shots: 100,
-        notify_refill_at: 20,
+        totalShots: 100,
+        notifyRefillAt: 20,
         email: 'user@domain.com'
       }
     };
 
     return request
-      .put('devices/' + deviceId + '/associate')
+      .put('/devices/' + deviceId + '/associate')
       .send(data)
       .expect(200)
       .then(function (res) {
@@ -75,16 +75,16 @@ describe('Devices', function () {
 
         expect(device).to.have.property('id', deviceId);
         expect(device).to.have.property('name', device.name);
-        expect(device).to.have.property('total_shots', device.total_shots);
-        expect(device).to.have.property('notify_refill_at', device.notify_refill_at);
+        expect(device).to.have.property('totalShots', device.totalShots);
+        expect(device).to.have.property('notifyRefillAt', device.notifyRefillAt);
         expect(device).to.have.property('email', device.email);
-        expect(device).to.have.property('status', 'ASSOCIATED');
+        expect(device).to.have.property('provisioningState', 'activated');
       });
   });
 
   it('should disassociate the device', function () {
     return request
-      .put('devices/' + deviceId + '/disassociate')
+      .put('/devices/' + deviceId + '/disassociate')
       .expect(200)
       .then(function (res) {
         var body = res.body;
@@ -94,7 +94,7 @@ describe('Devices', function () {
         var device = res.body.device;
 
         expect(device).to.have.property('id', deviceId);
-        expect(device).to.have.property('status', 'DISASSOCIATED');
+        expect(device).to.have.property('provisioningState');
       });
   });
 });
