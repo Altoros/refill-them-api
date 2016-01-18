@@ -1,1 +1,1 @@
-exports.devices = require('./devices.js');
+exports.devices = require('./devices');

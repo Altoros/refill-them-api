@@ -2,11 +2,7 @@ require('dotenv').load();
 var express = require('express');
 var bodyParser = require('body-parser');
 var routes = require('./routes');
-var BlueprintClient = require('xively-blueprint-client-js');
-
-var client = new BlueprintClient({
-  authorization: process.env.BLUEPRINT_AUTHORIZATION
-});
+var client = require('./modules/blueprint');
 
 var server = express();
 

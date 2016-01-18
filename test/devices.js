@@ -1,8 +1,4 @@
-/* global before describe it request expect */
-var BlueprintClient = require('xively-blueprint-client-js');
-var client = new BlueprintClient({
-  authorization: process.env.BLUEPRINT_AUTHORIZATION
-});
+/* global before describe it request expect client */
 var randomString = require('random-string');
 
 before(function (done) {
