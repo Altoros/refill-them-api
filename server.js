@@ -3,6 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var routes = require('./routes');
 var blueprint_client = require('./modules/blueprint');
+var mqtt_client = require('./modules/mqtt');
 
 var server = express();
 
@@ -14,6 +15,7 @@ if (module.parent) {
 } else {
   blueprint_client.ready
     .then(function () {
+      mqtt_client.startListener();
       server.listen(3000, function () {
         console.log('RefillThem API listening on http://localhost:3000');
       });
