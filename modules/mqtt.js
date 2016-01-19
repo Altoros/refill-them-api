@@ -20,6 +20,13 @@ mqtt_client.startListener = function () {
     }, function (err) {
       console.log('Error on connect: ', err);
     })
+    .on('message', function (topic, message) {
+      console.log('Message arrived on: ', topic);
+      console.log(message.toString());
+
+      var deviceId = topic.split('/')[5];
+      updateDevice(deviceId, message.toString());
+    })
     .on('error', function (data) {
       console.log('MQTT error: ', data);
     })
@@ -44,29 +51,64 @@ mqtt_client.listenDevice = function (device) {
 
 var subscribeDevices = function () {
   blueprint_client.apis.devices.all({
-    'accountId': process.env.BLUEPRINT_ACCOUNT_ID
-  }).then(function (res) {
-    var devices = res.obj.devices.results;
-    var channels = [];
+    'accountId': process.env.BLUEPRINT_ACCOUNT_ID,
+    'results': false
+  }).then(function (response) {
+    var pageSize = response.obj.devices.meta.count;
 
-    devices.forEach(function (device) {
-      device.channels.forEach(function (topic) {
-        channels.push(topic.channel);
+    blueprint_client.apis.devices.all({
+      'accountId': process.env.BLUEPRINT_ACCOUNT_ID,
+      'pageSize': pageSize
+    }).then(function (res) {
+      var devices = res.obj.devices.results;
+      var channels = [];
+
+      devices.forEach(function (device) {
+        device.channels.forEach(function (topic) {
+          if (topic.channelTemplateName === 'STATUS_REPORT') {
+            channels.push(topic.channel);
+          }
+        });
       });
-    });
 
-    mqtt_client.instance.subscribe(channels, {qos: 0}, function (err) {
-      if (err) {
-        console.log('Error on subscribe: ', err);
-      } else {
-        console.log('Subscription completed!');
-      }
-    });
-  })
-    .catch(function (res) {
+      mqtt_client.instance.subscribe(channels, {qos: 0}, function (err) {
+        if (err) {
+          console.log('Error on subscribe: ', err);
+        } else {
+          console.log('Subscription completed!');
+        }
+      });
+    }).catch(function (res) {
       console.log('Error!!!');
       console.error(res);
     });
+  }).catch(function (res) {
+    console.log('Error!!!');
+    console.error(res);
+  });
+};
+
+var updateDevice = function (deviceId, message) {
+  blueprint_client.apis.devices.byId({
+    id: deviceId
+  }).then(function (response) {
+    var device = response.obj.device;
+
+    var data = {
+      id: deviceId,
+      etag: device.version
+    };
+
+    if (message === 'consume_shot') {
+      data.consumedShots = ++device.consumedShots;
+    } else if (message === 'refill') {
+      data.consumedShots = 0;
+    }
+    blueprint_client.apis.devices.update(data)
+      .then(function (response) {
+        console.log('Response after update', response.obj);
+      });
+  });
 };
 
 module.exports = mqtt_client;
