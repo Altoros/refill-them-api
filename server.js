@@ -4,7 +4,7 @@ var bodyParser = require('body-parser');
 var routes = require('./routes');
 var blueprint_client = require('./modules/blueprint');
 var mqtt_client = require('./modules/mqtt');
-var cors = require('cors')
+var cors = require('cors');
 
 var server = express();
 

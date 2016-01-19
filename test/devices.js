@@ -1,4 +1,4 @@
-/* global before describe it request expect blueprint_client */
+/* global before describe it request expect blueprint_client mqtt_client */
 var randomString = require('random-string');
 
 before(function (done) {
@@ -42,7 +42,7 @@ describe('Devices', function () {
         expect(device).to.have.property('password');
         expect(device).to.have.property('consumedShots');
 
-        //Verifying channels creation
+        // Verifying channels creation
         expect(device.channels).to.have.length(1);
 
         var status_report = device.channels[0];

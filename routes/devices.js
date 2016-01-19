@@ -45,7 +45,7 @@ routes
                 // Get device after get credentials
                 updateDevice(device, {password: credential.secret})
                   .then(function (device) {
-                    //Subscribe to device channels
+                    // Subscribe to device channels
                     mqtt_client.listenDevice(device);
 
                     res

@@ -35,9 +35,9 @@ mqtt_client.listenDevice = function (device) {
 
   mqtt_client.instance.subscribe(channels, {qos: 0}, function (err) {
     if (err) {
-      console.log('Error subscribing to channels of Device with ID ' +  device.id + ': ', err);
+      console.log('Error subscribing to channels of Device with ID ' + device.id + ': ', err);
     } else {
-      console.log('Subscription to device with ID '+ device.id + ': completed');
+      console.log('Subscription to device with ID ' + device.id + ': completed');
     }
   });
 };
