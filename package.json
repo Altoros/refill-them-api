@@ -25,6 +25,7 @@
     "mqtt": "^1.6.3",
     "q": "^1.4.1",
     "random-string": "^0.1.2",
+    "sendgrid": "^2.0.0",
     "xively-blueprint-client-js": "git+ssh://git@github.com:ionia-corporation/blueprint-client.git#v0.0.8"
   },
   "devDependencies": {
