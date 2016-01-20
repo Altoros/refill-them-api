@@ -1,5 +1,6 @@
 var mqtt = require('mqtt');
 var blueprint_client = require('./blueprint');
+var emailNotifications = require('./email-notifications');
 
 var mqtt_client = {};
 
@@ -21,11 +22,13 @@ mqtt_client.startListener = function () {
       console.log('Error on connect: ', err);
     })
     .on('message', function (topic, message) {
+      message = message.toString();
+
       console.log('Message arrived on: ', topic);
-      console.log(message.toString());
+      console.log(message);
 
       var deviceId = topic.split('/')[5];
-      updateDevice(deviceId, message.toString());
+      updateDevice(deviceId, message);
     })
     .on('error', function (data) {
       console.log('MQTT error: ', data);
@@ -75,7 +78,7 @@ var subscribeDevices = function () {
         if (err) {
           console.log('Error on subscribe: ', err);
         } else {
-          console.log('Subscription completed!');
+          console.log('Subscription completed! (%s channels)', channels.length);
         }
       });
     }).catch(function (res) {
@@ -101,6 +104,13 @@ var updateDevice = function (deviceId, message) {
 
     if (message === 'consume_shot') {
       data.consumedShots = ++device.consumedShots;
+
+      var shotsLeft = device.totalShots - data.consumedShots;
+
+      //Checks equality to avoid multiple notifications
+      if (shotsLeft === device.notifyRefillAt) {
+        emailNotifications.notifyRefill(device, shotsLeft);
+      }
     } else if (message === 'refill') {
       data.consumedShots = 0;
     }
