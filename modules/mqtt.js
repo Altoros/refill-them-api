@@ -1,6 +1,15 @@
 var mqtt = require('mqtt');
+var kue = require('kue');
 var blueprint_client = require('./blueprint');
 var emailNotifications = require('./email-notifications');
+
+var queue = kue.createQueue({
+  redis: process.env.REDIS_URL
+});
+
+queue.process('update_device', function(job, done){
+  updateDevice(job.data.deviceId, job.data.message, done);
+});
 
 var mqtt_client = {};
 
@@ -21,15 +30,7 @@ mqtt_client.startListener = function () {
     }, function (err) {
       console.log('Error on connect: ', err);
     })
-    .on('message', function (topic, message) {
-      message = message.toString();
-
-      console.log('Message arrived on: ', topic);
-      console.log(message);
-
-      var deviceId = topic.split('/')[5];
-      updateDevice(deviceId, message);
-    })
+    .on('message', processMessage)
     .on('error', function (data) {
       console.log('MQTT error: ', data);
     })
@@ -91,7 +92,33 @@ var subscribeDevices = function () {
   });
 };
 
-var updateDevice = function (deviceId, message) {
+var processMessage = function (topic, message) {
+  message = message.toString();
+
+  console.log('Message arrived on: ', topic);
+  console.log(message);
+
+  var deviceId = topic.split('/')[5];
+  queue.create('update_device', {
+    deviceId: deviceId,
+    message: message
+  }).removeOnComplete(true)
+    .save( function(err){
+       if(err) {
+        console.log('Error creating job: ', err);
+      } else {
+        console.log('Job created');
+      }
+    })
+    .on('complete', function(result){
+      console.log('Device updated ' + result);
+    })
+    .on('failed', function(errorMessage){
+      console.log('Job failed: ', errorMessage);
+    });
+};
+
+var updateDevice = function (deviceId, message, done) {
   blueprint_client.apis.devices.byId({
     id: deviceId
   }).then(function (response) {
@@ -116,9 +143,14 @@ var updateDevice = function (deviceId, message) {
     }
     blueprint_client.apis.devices.update(data)
       .then(function (response) {
-        console.log('Response after update', response.obj);
-      });
-  });
+        done(); //success
+        console.log('Device updated');
+      }, onBlueprintError);
+  }, onBlueprintError);
+
+  function onBlueprintError (err) {
+    done(new Error(err));
+  }
 };
 
 module.exports = mqtt_client;
