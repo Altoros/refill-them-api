@@ -4,7 +4,7 @@
   "description": "API to use blueprint-client and give support to RefillThem",
   "main": "server.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha",
+    "test": "semistandard && ./node_modules/mocha/bin/mocha",
     "dev": "nodemon server.js"
   },
   "keywords": [
@@ -32,6 +32,7 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
+    "semistandard": "^7.0.5",
     "supertest": "^1.1.0",
     "supertest-as-promised": "^2.0.2"
   }
