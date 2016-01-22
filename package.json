@@ -15,7 +15,10 @@
     "blueprint"
   ],
   "author": "Altoros",
-  "repository": "https://github.com/Altoros/refill-them-api",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/Altoros/refill-them-api"
+  },
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.14.2",
