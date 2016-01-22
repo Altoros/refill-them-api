@@ -136,7 +136,7 @@ var processMessage = function (topic, message) {
         }
       })
       .on('complete', function (result) {
-        console.log('Device updated ' + result);
+        console.log('Job Completed. Result: ' + result);
       })
       .on('failed', function (errorMessage) {
         console.log('Job failed: ', errorMessage);
