@@ -1,5 +1,7 @@
 # RefillThem API
 
+[![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square)](https://github.com/Flet/semistandard)
+
 This is an API developed to be used by [RefillThem](https://github.com/Altoros/refill-them) (mobile application) and Dispensers with IoT capabilities. It implements blueprint-client, a node module developed by Xively.
 
 ## Installation
