@@ -8,7 +8,11 @@ var queue = kue.createQueue({
 });
 
 queue.process('update_device', function(job, done){
-  updateDevice(job.data.deviceId, job.data.message, done);
+  updateDevice(job.data.deviceId, job.data.messageType, done);
+});
+
+queue.process('send_status', function(job, done){
+  sendStatus(job.data.deviceId, job.data.topic, done);
 });
 
 var mqtt_client = {};
@@ -55,8 +59,9 @@ mqtt_client.listenDevice = function (device) {
 
 var subscribeDevices = function () {
   blueprint_client.apis.devices.all({
-    'accountId': process.env.BLUEPRINT_ACCOUNT_ID,
-    'results': false
+    accountId: process.env.BLUEPRINT_ACCOUNT_ID,
+    organizationId: process.env.BLUEPRINT_ORGANIZATION_ID,
+    results: false
   }).then(function (response) {
     var pageSize = response.obj.devices.meta.count;
 
@@ -93,43 +98,60 @@ var subscribeDevices = function () {
 };
 
 var processMessage = function (topic, message) {
-  message = message.toString();
+  message = JSON.parse(message);
 
   console.log('Message arrived on: ', topic);
   console.log(message);
 
   var deviceId = topic.split('/')[5];
-  queue.create('update_device', {
-    deviceId: deviceId,
-    message: message
-  }).removeOnComplete(true)
-    .save( function(err){
-       if(err) {
-        console.log('Error creating job: ', err);
-      } else {
-        console.log('Job created');
-      }
-    })
-    .on('complete', function(result){
-      console.log('Device updated ' + result);
-    })
-    .on('failed', function(errorMessage){
-      console.log('Job failed: ', errorMessage);
-    });
+  var job = {
+    data: {
+      deviceId: deviceId
+    }
+  };
+
+  switch(message.type) {
+    case 'consume_shot':
+    case 'refill':
+      job.name = 'update_device';
+      job.data.messageType = message.type;
+      break;
+    case 'get_status':
+      job.name = 'send_status';
+      job.data.topic = topic;
+      break;
+  }
+
+  if(job.name) {
+    queue.create(job.name, job.data)
+      .removeOnComplete(true)
+      .save( function(err){
+         if(err) {
+          console.log('Error creating job: ', err);
+        } else {
+          console.log('Job ' + job.name + ' created');
+        }
+      })
+      .on('complete', function(result){
+        console.log('Device updated ' + result);
+      })
+      .on('failed', function(errorMessage){
+        console.log('Job failed: ', errorMessage);
+      });
+  }
 };
 
-var updateDevice = function (deviceId, message, done) {
+var updateDevice = function (deviceId, messageType, done) {
   blueprint_client.apis.devices.byId({
     id: deviceId
   }).then(function (response) {
     var device = response.obj.device;
-
     var data = {
       id: deviceId,
       etag: device.version
     };
 
-    if (message === 'consume_shot') {
+    if (messageType === 'consume_shot') {
       data.consumedShots = ++device.consumedShots;
 
       var shotsLeft = device.totalShots - data.consumedShots;
@@ -138,9 +160,10 @@ var updateDevice = function (deviceId, message, done) {
       if (shotsLeft === device.notifyRefillAt) {
         emailNotifications.notifyRefill(device, shotsLeft);
       }
-    } else if (message === 'refill') {
+    } else if (messageType === 'refill') {
       data.consumedShots = 0;
     }
+
     blueprint_client.apis.devices.update(data)
       .then(function (response) {
         done(); //success
@@ -151,6 +174,24 @@ var updateDevice = function (deviceId, message, done) {
   function onBlueprintError (err) {
     done(new Error(err));
   }
+};
+
+
+var sendStatus = function (deviceId, topic, done) {
+  blueprint_client.apis.devices.byId({
+    id: deviceId
+  }).then(function (response) {
+    var device = response.obj.device;
+    var message = {
+      type: 'send_status',
+      data: device
+    };
+
+    mqtt_client.instance.publish(topic, JSON.stringify(message));
+    done();
+  }, function (err) {
+    done(new Error(err));
+  });
 };
 
 module.exports = mqtt_client;
