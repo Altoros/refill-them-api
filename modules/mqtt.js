@@ -1,3 +1,4 @@
+/* global process */
 var mqtt = require('mqtt');
 var kue = require('kue');
 var blueprint_client = require('./blueprint');
@@ -7,11 +8,11 @@ var queue = kue.createQueue({
   redis: process.env.REDIS_URL
 });
 
-queue.process('update_device', function(job, done){
+queue.process('update_device', function (job, done) {
   updateDevice(job.data.deviceId, job.data.messageType, done);
 });
 
-queue.process('send_status', function(job, done){
+queue.process('send_status', function (job, done) {
   sendStatus(job.data.deviceId, job.data.topic, done);
 });
 
@@ -110,7 +111,7 @@ var processMessage = function (topic, message) {
     }
   };
 
-  switch(message.type) {
+  switch (message.type) {
     case 'consume_shot':
     case 'refill':
       job.name = 'update_device';
@@ -122,20 +123,22 @@ var processMessage = function (topic, message) {
       break;
   }
 
-  if(job.name) {
+  if (job.name) {
     queue.create(job.name, job.data)
       .removeOnComplete(true)
-      .save( function(err){
-         if(err) {
+      .ttl(10000)
+      .attempts(3)
+      .save(function (err) {
+        if (err) {
           console.log('Error creating job: ', err);
         } else {
           console.log('Job ' + job.name + ' created');
         }
       })
-      .on('complete', function(result){
+      .on('complete', function (result) {
         console.log('Device updated ' + result);
       })
-      .on('failed', function(errorMessage){
+      .on('failed', function (errorMessage) {
         console.log('Job failed: ', errorMessage);
       });
   }
@@ -156,7 +159,7 @@ var updateDevice = function (deviceId, messageType, done) {
 
       var shotsLeft = device.totalShots - data.consumedShots;
 
-      //Checks equality to avoid multiple notifications
+      // Checks equality to avoid multiple notifications
       if (shotsLeft === device.notifyRefillAt) {
         emailNotifications.notifyRefill(device, shotsLeft);
       }
@@ -166,7 +169,7 @@ var updateDevice = function (deviceId, messageType, done) {
 
     blueprint_client.apis.devices.update(data)
       .then(function (response) {
-        done(); //success
+        done(); // success
         console.log('Device updated');
       }, onBlueprintError);
   }, onBlueprintError);
@@ -175,7 +178,6 @@ var updateDevice = function (deviceId, messageType, done) {
     done(new Error(err));
   }
 };
-
 
 var sendStatus = function (deviceId, topic, done) {
   blueprint_client.apis.devices.byId({
