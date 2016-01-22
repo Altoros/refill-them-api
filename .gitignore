@@ -4,4 +4,8 @@ node_modules/
 # Logs
 *.log
 
+#Env Vars
 .env
+
+#Editor Files
+launch.json
