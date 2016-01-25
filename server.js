@@ -12,6 +12,12 @@ server.use(bodyParser.json('application/json'));
 server.use(cors());
 server.use(routes.devices);
 
+server.get('/', function (req, res) {
+  res
+    .status(200)
+    .send('Refill Them API running');
+})
+
 if (module.parent) {
   module.exports = server;
 } else {
