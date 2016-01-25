@@ -99,7 +99,14 @@ var subscribeDevices = function () {
 };
 
 var processMessage = function (topic, message) {
-  message = JSON.parse(message);
+  try {
+    message = JSON.parse(message);
+  } catch (e) {
+    message = {
+      type: 'unknown',
+      message: 'Message is not a valid JSON'
+    };
+  }
 
   console.log('Message arrived on: ', topic);
   console.log(message);
