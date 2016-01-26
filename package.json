@@ -4,6 +4,7 @@
   "description": "API to use blueprint-client and give support to RefillThem",
   "main": "server.js",
   "scripts": {
+    "postinstall": "npm install git+https://$GITHUB_OAUTH_TOKEN:x-oauth-basic@github.com/ionia-corporation/blueprint-client.git#v0.0.8",
     "test": "semistandard && ./node_modules/mocha/bin/mocha",
     "dev": "nodemon server.js"
   },
@@ -29,8 +30,7 @@
     "mqtt": "^1.6.3",
     "q": "^1.4.1",
     "random-string": "^0.1.2",
-    "sendgrid": "^2.0.0",
-    "xively-blueprint-client-js": "git+https://3dccc9ab92ce22a6ddc446ff6708cdfee6b2964d:x-oauth-basic@github.com/ionia-corporation/blueprint-client.git#v0.0.8"
+    "sendgrid": "^2.0.0"
   },
   "devDependencies": {
     "chai": "^3.4.1",
