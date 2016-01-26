@@ -1,3 +1,4 @@
+/* global process */
 require('dotenv').load();
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -16,7 +17,7 @@ server.get('/', function (req, res) {
   res
     .status(200)
     .send('Refill Them API running');
-})
+});
 
 if (module.parent) {
   module.exports = server;
@@ -24,8 +25,9 @@ if (module.parent) {
   blueprint_client.ready
     .then(function () {
       mqtt_client.startListener();
-      server.listen(3000, function () {
-        console.log('RefillThem API listening on http://localhost:3000');
+      var port = process.env.PORT || 5000;
+      server.listen(port, function () {
+        console.log('RefillThem API listening on http://localhost:' + port);
       });
     });
 }
