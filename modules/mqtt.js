@@ -58,6 +58,12 @@ mqtt_client.listenDevice = function (device) {
   });
 };
 
+mqtt_client.stopListener = function () {
+  mqtt_client.instance.end(false, function () {
+    console.log('MQTT Listener is closed');
+  });
+};
+
 var subscribeDevices = function () {
   blueprint_client.apis.devices.all({
     accountId: process.env.BLUEPRINT_ACCOUNT_ID,
