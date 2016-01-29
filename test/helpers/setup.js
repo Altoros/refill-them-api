@@ -1,3 +1,4 @@
+/* global GLOBAL */
 var chai = require('chai');
 var supertest = require('supertest-as-promised');
 var api = require('../../server');
