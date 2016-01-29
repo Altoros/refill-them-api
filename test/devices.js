@@ -105,13 +105,20 @@ describe('Devices', function () {
 
 // Remove the device after finish the tests
 after(function (done) {
+  mqtt_client.stopListener();
+
   blueprint_client.apis.devices.byId({
     id: deviceId
   })
-    .then(function (device) {
+    .then(function (response) {
+      var device = response.obj.device;
+
       blueprint_client.apis.devices.delete({
         id: deviceId,
         etag: device.version
-      });
-    });
+      })
+        .then(function () {
+          done();
+        }, done);
+    }, done);
 });
