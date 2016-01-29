@@ -1,6 +1,7 @@
-/* global before describe it request expect blueprint_client mqtt_client */
+/* global before, describe, it, request, expect, blueprint_client, mqtt_client, after */
 var randomString = require('random-string');
 
+// Wait for BlueprintClient initialization
 before(function (done) {
   blueprint_client.ready
     .then(function () {
@@ -10,8 +11,9 @@ before(function (done) {
     });
 });
 
+var deviceId;
+
 describe('Devices', function () {
-  var deviceId;
   var associationCode;
 
   it('should save a new device and return an association code', function () {
@@ -51,9 +53,6 @@ describe('Devices', function () {
         deviceId = device.id;
         associationCode = device.associationCode;
       });
-
-  // TODO
-  // Remove device
   });
 
   it('should associate the device', function () {
@@ -102,4 +101,17 @@ describe('Devices', function () {
         expect(device).to.have.property('provisioningState');
       });
   });
+});
+
+// Remove the device after finish the tests
+after(function (done) {
+  blueprint_client.apis.devices.byId({
+    id: deviceId
+  })
+    .then(function (device) {
+      blueprint_client.apis.devices.delete({
+        id: deviceId,
+        etag: device.version
+      });
+    });
 });
