@@ -3,7 +3,8 @@ node_js:
   - "5.5.0"
 addons:
     code_climate:
-        repo_token: e738d6a0d77f8e8d47da02e058b8e47ec8719288247d6d117ecbe6692a6aa84b
+        repo_token:
+          secure: "EjmfYzSVAIJ7jxaLSNirYFzVRosWU0kzqdk7JIuQrFnxnn9ohoGwFJDuKHTSQd6QChatT2/S1dxXYbFV55gDAW5+aqxnYyj37wKUR/BXBYTz9ai2J2WLW0INyJyW02d6cftTD6z5DUB2+6IBpGxtDI9LwbQ0vkORgfP2V3az2zrdRFEjRZsVdQ46b8XPuNg6cviuOPPl32FIV63utFJwtBw0jl7RRuZFjUWVzrlndDCuWzn2OolOeAhFiGflcsqKr5Iv/frwD5aONgc53buAcc1AqB+YqSG1A+rHZ+Sf2SOzOOQVENUxCTxSPz2Xa0FcKCoBPrTWEaUHHsduXyxgRHXKSxBAp6K/n9adlQBnYFCdjfckj4KaMXlzA8nsqC1UtndWhE5RxxgnyrhLN6rCJGut7RrU+dEs0jNsXftsOwh/HwzXGOjbliuDEgFN9QHZfdEFTzknBuRhrJOV5FL2Mv/FxZEc2BxsgutSE8doDIJsfNKTN9AAB885Ty5dvWx6dAozKJTGmmUxloRTjr2McsJvELnD+hFazDg1gafHhpYhGMM5bGTy/UPU6WCAWIB4vWvowycGTVvFItvEgKwe+OoAScUabg3Nff5Ue8BZBX/H03ZrwsLCHhBosYOmqBzSccKjwQo+giNahVlksIlV1tjphp7E6jBlIB2xP03PErU="
 before_script:
   - npm install -g codeclimate-test-reporter
 after_script:
