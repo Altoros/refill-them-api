@@ -4,3 +4,5 @@ node_js:
 addons:
     code_climate:
         repo_token: e738d6a0d77f8e8d47da02e058b8e47ec8719288247d6d117ecbe6692a6aa84b
+after_script:
+  - codeclimate-test-reporter < lcov.info
