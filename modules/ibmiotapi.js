@@ -23,6 +23,7 @@ var api = {
   get: function (path, callback) {
     api.options.method = 'GET';
     api.options.uri = api.prefix + path;
+    delete api.options.json;
 
     api.request(callback);
   },
