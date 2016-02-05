@@ -3,16 +3,15 @@ require('dotenv').load();
 require('./modules/services').load();
 var express = require('express');
 var bodyParser = require('body-parser');
-// var routes = require('./routes');
+var routes = require('./routes');
 // var mqtt_client = require('./modules/mqtt');
 var cors = require('cors');
-var api = require('./modules/ibmiotapi');
 
 var server = express();
 
 server.use(bodyParser.json('application/json'));
 server.use(cors());
-// server.use(routes.devices);
+server.use(routes.devices);
 
 server.get('/', function (req, res) {
   res

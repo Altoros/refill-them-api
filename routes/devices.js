@@ -1,8 +1,6 @@
 var express = require('express');
-var q = require('q');
 var randomString = require('random-string');
-var blueprint_client = require('../modules/blueprint');
-var mqtt_client = require('../modules/mqtt');
+var api = require('../modules/ibmiotapi');
 
 var routes = express.Router();
 
@@ -16,146 +14,110 @@ routes
       special: false
     }).toUpperCase();
 
-    // Create device on Blueprint
-    blueprint_client.apis.devices.create({
-      accountId: process.env.BLUEPRINT_ACCOUNT_ID,
-      deviceTemplateId: process.env.BLUEPRINT_DEVICE_TEMPLATE_ID,
-      organizationId: process.env.BLUEPRINT_ORGANIZATION_ID,
-      serialNumber: req.body.serial,
-      associationCode: associationCode
-    })
-      .then(function (response) {
-        var device = response.obj.device;
+    var data = {
+      deviceId: req.body.serial,
+      deviceInfo: {
+        serialNumber: req.body.serial
+      },
+      metadata: {
+        associationCode: associationCode,
+        consumedShots: 0
+      }
+    };
 
-        // Get MQTT credentials for the device
-        blueprint_client.apis.accessMqttCredentials.create({
-          accountId: process.env.BLUEPRINT_ACCOUNT_ID,
-          entityId: device.id,
-          entityType: 'device'
-        })
-          .then(function (response) {
-            var credential = response.obj.mqttCredential;
+    // Create device on Bluemix
+    api.post('/device/types/dispenser/devices', data, function (error, response, body) {
+      console.log('Error:', error);
+      console.log('Status Code:', res.statusCode);
+      console.log('Body:', body);
 
-            blueprint_client.apis.devices.byId({
-              id: device.id
-            })
-              .then(function (response) {
-                device = response.obj.device;
+      if (error || response.statusCode !== 201) {
+        res
+          .status(response.statusCode)
+          .send(body);
+      } else {
+        var device = body;
 
-                // Get device after get credentials
-                updateDevice(device, {password: credential.secret})
-                  .then(function (device) {
-                    // Subscribe to device channels
-                    mqtt_client.listenDevice(device);
-
-                    res
-                      .status(201)
-                      .send({device: device});
-                  }, function (err) {
-                    onBlueprintError(err, res);
-                  });
-              }, function (err) {
-                onBlueprintError(err, res);
-              });
-          }, function (response) {
-            // Delete device
-            blueprint_client.apis.devices.delete({
-              id: device.id,
-              etag: device.version
-            })
-              .then(function (response) {
-                res
-                  .status(409)
-                  .send('An error has occurred trying to get the credentials for the device');
-              }, function (response) {
-                onBlueprintError(response, res);
-              });
-          });
-      }, function (response) {
-        onBlueprintError(response, res);
-      });
+        // Subscribe to device channels
+        // mqtt_client.listenDevice(device);
+        res
+          .status(201)
+          .send({device: device});
+      }
+    });
   })
   .put('/devices/:id/associate', function (req, res) {
     var deviceId = req.params.id;
 
-    blueprint_client.apis.devices.byId({
-      id: deviceId
-    })
-      .then(function (response) {
-        var device = response.obj.device;
-        var data = req.body.device;
+    console.log('GET /device/types/dispenser/devices/' + deviceId);
 
-        if (device.associationCode === data.associationCode) {
-          updateDevice(device, data)
-            .then(function (device) {
+    api.get('/device/types/dispenser/devices/' + deviceId, function (error, response, body) {
+      if (error || response.statusCode !== 200) {
+        // TODO: remove device
+        res
+          .status(response.statusCode)
+          .send('Server could not verify association code');
+      } else {
+        var device = JSON.parse(body);
+
+        if (req.body.device.associationCode === device.metadata.associationCode) {
+          delete req.body.device.associationCode;
+
+          var data = {
+            metadata: device.metadata
+          };
+
+          for (var index in req.body.device) {
+            data.metadata[index] = req.body.device[index];
+          }
+
+          api.put('/device/types/dispenser/devices/' + deviceId, data, function (error, response, body) {
+            console.log(error);
+            console.log(response.statusCode);
+            console.log(body);
+
+            if (error || response.statusCode !== 200) {
+              // TODO: remove device
+              res
+                .status(response.statusCode)
+                .send(body);
+            } else {
+              var device = body;
+
               res
                 .status(200)
                 .send({device: device});
-            }, function (response) {
-              onBlueprintError(response, res);
-            });
+            }
+          });
         } else {
+          // TODO: remove device
           res
             .status(403)
-            .send({msg: 'Wrong association code'});
+            .send('Association Code does not match');
         }
-      }, function (response) {
-        onBlueprintError(response, res);
-      });
-  })
-  .put('/devices/:id/disassociate', function (req, res) {
-    var deviceId = req.params.id;
-
-    blueprint_client.apis.devices.byId({
-      id: deviceId
-    })
-      .then(function (response) {
-        var device = response.obj.device;
-
-        updateDevice(device, {provisioningState: 'deactivated'})
-          .then(function (device) {
-            res
-              .status(200)
-              .send({device: device});
-          }, function (response) {
-            onBlueprintError(response, res);
-          });
-      }, function (response) {
-        onBlueprintError(response, res);
-      });
+      }
+    });
   });
+//   .put('/devices/:id/disassociate', function (req, res) {
+//     var deviceId = req.params.id;
 
-function updateDevice (device, data) {
-  var deferred = q.defer();
+//     blueprint_client.apis.devices.byId({
+//       id: deviceId
+//     })
+//       .then(function (response) {
+//         var device = response.obj.device;
 
-  data.id = device.id;
-  data.etag = device.version;
-
-  // Update device
-  blueprint_client.apis.devices.update(data)
-    .then(function (response) {
-      device = response.obj.device;
-      deferred.resolve(device);
-    }, deferred.reject);
-
-  return deferred.promise;
-}
-
-// Utils functions
-function onBlueprintError (response, res) {
-  console.log('Error!!!');
-  var errorMessage = '';
-  if (response.obj.error) {
-    console.log(response.obj.error.details);
-    errorMessage = response.obj.error.message;
-  } else if (response.obj.length) {
-    console.log(response.obj);
-    errorMessage = response.obj[0].message;
-  }
-
-  res
-    .status(response.status)
-    .send(errorMessage);
-}
+//         updateDevice(device, {provisioningState: 'deactivated'})
+//           .then(function (device) {
+//             res
+//               .status(200)
+//               .send({device: device});
+//           }, function (response) {
+//             onBlueprintError(response, res);
+//           });
+//       }, function (response) {
+//         onBlueprintError(response, res);
+//       });
+//   });
 
 module.exports = routes;
