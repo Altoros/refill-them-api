@@ -12,36 +12,40 @@ var api = {
     auth: {
       username: credentials.apiKey,
       password: credentials.apiToken
-    },
-    headers: {
-      'Content-Type': 'application/json'
     }
+  },
+  request: function (callback) {
+    return request(api.options, callback)
+      .on('error', function (e) {
+        console.log(e);
+      });
   },
   get: function (path, callback) {
     api.options.method = 'GET';
     api.options.uri = api.prefix + path;
-    request(api.options, callback);
+
+    api.request(callback);
   },
   post: function (path, data, callback) {
     api.options.method = 'POST';
     api.options.uri = api.prefix + path;
+    api.options.json = data;
 
-    request(api.options, callback).form(JSON.stringify(data))
-      .on('error', function (e) {
-        console.log(e);
-      });
+    api.request(callback);
+  },
+  put: function (path, data, callback) {
+    api.options.method = 'PUT';
+    api.options.uri = api.prefix + path;
+    api.options.json = data;
+
+    api.request(callback);
+  },
+  delete: function (path, callback) {
+    api.options.method = 'DELETE';
+    api.options.uri = api.prefix + path;
+
+    api.request(callback);
   }
 };
-
-var data = {
-  "id": "dispenser",
-  "classId": "Device"
-};
-
-api.post('/device/types', data, function (error, res, body) {
-  console.log(error);
-  console.log(res.statusCode);
-  console.log(body);
-});
 
 module.exports = api;
