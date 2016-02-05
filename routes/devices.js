@@ -53,10 +53,11 @@ routes
 
     api.get('/device/types/dispenser/devices/' + deviceId, function (error, response, body) {
       if (error || response.statusCode !== 200) {
-        // TODO: remove device
-        res
-          .status(response.statusCode)
-          .send('Server could not verify association code');
+        api.delete('/device/types/dispenser/devices' + deviceId, function (error, response, body) {
+          res
+            .status(response.statusCode)
+            .send('Server could not verify association code and Device was deleted.');
+        });
       } else {
         var device = JSON.parse(body);
 
@@ -77,10 +78,11 @@ routes
             console.log(body);
 
             if (error || response.statusCode !== 200) {
-              // TODO: remove device
-              res
-                .status(response.statusCode)
-                .send(body);
+              api.delete('/device/types/dispenser/devices' + deviceId, function (error, response, body) {
+                res
+                  .status(response.statusCode)
+                  .send('Device deleted.');
+              });
             } else {
               var device = body;
 
@@ -90,10 +92,11 @@ routes
             }
           });
         } else {
-          // TODO: remove device
-          res
-            .status(403)
-            .send('Association Code does not match');
+           api.delete('/device/types/dispenser/devices' + deviceId, function (error, response, body) {
+              res
+                .status(response.statusCode)
+                .send('Association Code does not match and Device was deleted.');
+            });
         }
       }
     });
@@ -119,5 +122,13 @@ routes
 //         onBlueprintError(response, res);
 //       });
 //   });
+
+var deleteDevice = function (res, deviceId, errorMsg) {
+  api.delete('/device/types/dispenser/devices' + deviceId, function (error, response, body) {
+    res
+      .status(response.statusCode)
+      .send(errorMsg);
+  });
+}
 
 module.exports = routes;
